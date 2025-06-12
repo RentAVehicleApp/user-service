@@ -1,0 +1,33 @@
+package rent.vehicle.useerservice.app.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import rent.vehicle.dto.request.CreateUserDto;
+import rent.vehicle.dto.request.UpdateUserDto;
+import rent.vehicle.dto.response.UserResponse;
+
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+@Validated
+public class UserController {
+    final UserService userService;
+
+    @PostMapping
+    public UserResponse createUser(@RequestBody CreateUserDto createUserDto) {
+        return userService.createUser(createUserDto);
+    }
+    @GetMapping("/{userId}")
+    public UserResponse getUser(@PathVariable String userId) {
+        return userService.getUser(userId);
+    }
+    @PatchMapping("/update/{userId}")
+    public UserResponse updateUser(@PathVariable String userId, @RequestBody UpdateUserDto updateUserDto) {
+        return userService.updateUser(userId,updateUserDto);
+    }
+    @DeleteMapping
+    public UserResponse deleteUser(@PathVariable String userId) {
+        return userService.removeUser(userId);
+    }
+}
