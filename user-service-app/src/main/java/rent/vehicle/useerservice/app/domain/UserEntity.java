@@ -5,9 +5,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import rent.vehicle.enums.UserLicenseType;
+import rent.vehicle.enums.UserRole;
+import rent.vehicle.enums.UserStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -44,6 +48,12 @@ public class UserEntity {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @Column(name = "status")
+    private UserStatus status;
+
+    @Column(name = "roles")
+    private List<UserRole> roles;
 
     // геттеры/сеттеры или Lombok @Getter/@Setter
 
