@@ -2,6 +2,7 @@ package rent.vehicle.useerservice.app.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import rent.vehicle.enums.UserLicenseType;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
+@RequiredArgsConstructor
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
