@@ -30,4 +30,8 @@ public class UserController {
     public UserResponse deleteUser(@PathVariable String userId) {
         return userService.removeUser(userId);
     }
+    @GetMapping("email/{email}")
+    public UserResponse getUserByEmail(@PathVariable String email) {
+        return userService.getUserByEmail(email);
+    }
 }
