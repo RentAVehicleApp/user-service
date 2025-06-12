@@ -1,4 +1,4 @@
-package rent.vehicle.dto;
+package rent.vehicle.dto.request;
 
 import jakarta.validation.constraints.*;
 
@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 @Getter
 @Setter
-public class UserDto {
+public class CreateUserDto {
     @NotNull
     private long userId;
 
@@ -40,8 +40,6 @@ public class UserDto {
     private String drivingLicenseNumber;
 
     private Instant createdAt;
-
-    private Instant updatedAt;
 
 
 }
