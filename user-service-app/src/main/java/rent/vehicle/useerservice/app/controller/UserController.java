@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import rent.vehicle.dto.request.CreateUserDto;
 import rent.vehicle.dto.request.UpdateUserDto;
 import rent.vehicle.dto.response.UserResponse;
+import rent.vehicle.useerservice.app.service.UserService;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -19,15 +20,15 @@ public class UserController {
         return userService.createUser(createUserDto);
     }
     @GetMapping("/{userId}")
-    public UserResponse getUser(@PathVariable String userId) {
+    public UserResponse getUser(@PathVariable long  userId) {
         return userService.getUser(userId);
     }
     @PatchMapping("/update/{userId}")
-    public UserResponse updateUser(@PathVariable String userId, @RequestBody UpdateUserDto updateUserDto) {
+    public UserResponse updateUser(@PathVariable long userId, @RequestBody UpdateUserDto updateUserDto) {
         return userService.updateUser(userId,updateUserDto);
     }
     @DeleteMapping
-    public UserResponse deleteUser(@PathVariable String userId) {
+    public UserResponse deleteUser(@PathVariable long userId) {
         return userService.removeUser(userId);
     }
     @GetMapping("email/{email}")
