@@ -3,37 +3,46 @@ package rent.vehicle.useerservice.app.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rent.vehicle.dto.request.CreateUserDto;
+import rent.vehicle.dto.request.SearchUserRequest;
 import rent.vehicle.dto.request.UpdateUserDto;
 import rent.vehicle.dto.response.UserResponse;
 import rent.vehicle.enums.UserStatus;
 import rent.vehicle.exception.UserAlreadyExistsException;
 import rent.vehicle.exception.UserNotFoundException;
+import rent.vehicle.exception.UserPhoneNumberAlreadyRegistered;
 import rent.vehicle.useerservice.app.domain.UserEntity;
 import rent.vehicle.useerservice.app.repository.UserRepository;
+import rent.vehicle.useerservice.app.service.specification.UserSpecificationBuilder;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static rent.vehicle.useerservice.app.service.specification.UserSpecification.isNotDeleted;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements  UserService {
-    final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final UserSpecificationBuilder userSpecificationBuilder;
 
+    @Transactional
     @Override
     public UserResponse createUser(CreateUserDto createUserDto) {
         log.info("createUser started");
         log.debug("User details: {}", createUserDto);
-        if(findUserById(createUserDto.getUserId())==null) {
         validateEmailUniqueness(createUserDto.getUserEmail(), null);
         validatePhoneUniqueness(createUserDto.getUserPhoneNumber(), null);
         try {
@@ -45,7 +54,7 @@ public class UserServiceImpl implements  UserService {
         }finally {
             log.info("Create user finished");
         }
-        }
+
         return null;
     }
 
@@ -55,41 +64,19 @@ public class UserServiceImpl implements  UserService {
         UserEntity userEntity = userRepository.findUserEntityById(userId);
         return modelMapper.map(userEntity, UserResponse.class);
     }
-
+    @Transactional
     @Override
     public UserResponse updateUser(long userId, UpdateUserDto updateUserDto) {
         log.info("updateUser started");
         log.debug("User details: {}", updateUserDto);
         try {
-            UserEntity userEntity = findUserById(userId);
-            if (updateUserDto.getUserFirstName() != null) {
-                log.debug("User first name: {}", updateUserDto.getUserFirstName());
-                userEntity.setFirstName(updateUserDto.getUserFirstName());
-                log.debug("Update first name finished");
-            }
-            if (updateUserDto.getUserLastName() != null) {
-                log.debug("User last name: {}", updateUserDto.getUserLastName());
-                userEntity.setLastName(updateUserDto.getUserLastName());
-                log.debug("Update last name finished");
-            }
-            if (updateUserDto.getUserLicense() != null) {
-                log.debug("User license {}", updateUserDto.getUserLicense());
-                userEntity.setLicenseType(updateUserDto.getUserLicense());
-                log.debug("Update license finished");
-            }
-            if (updateUserDto.getUserEmail() != null) {
-                log.debug("User email: {}", updateUserDto.getUserEmail());
-                validateEmailUniqueness(updateUserDto.getUserEmail(), userEntity.getId());
-                userEntity.setEmail(updateUserDto.getUserEmail());
-                log.debug("Update email finished");
-            }
-            if (updateUserDto.getUserPhoneNumber() != null) {
-                log.debug("User phone number: {}", updateUserDto.getUserPhoneNumber());
-                validatePhoneUniqueness(updateUserDto.getUserPhoneNumber(), userEntity.getId());
-                userEntity.setPhoneNumber(updateUserDto.getUserPhoneNumber());
-                log.debug("Update phone number finished");
-            }
-            userEntity.setUpdatedAt(updateUserDto.getUpdatedAt());
+            UserEntity userEntity = (UserEntity) findUserById(userId);
+            updateFirstNameIfPresent(updateUserDto, userEntity);
+            updateLastNameIfPresent(updateUserDto, userEntity);
+            updateEmailIfPresent(updateUserDto, userEntity);
+            updatePhoneNumberIfPresent(updateUserDto, userEntity);
+            updateLycenseTypeIfPresent(updateUserDto, userEntity);
+            userEntity.setUpdatedAt(Instant.now());
             userRepository.save(userEntity);
             return modelMapper.map(userEntity, UserResponse.class);
         }catch (Exception e) {
@@ -104,17 +91,17 @@ public class UserServiceImpl implements  UserService {
     @Override
     public UserResponse removeUser(long userId) {
         log.info("removeUser started");
-        UserEntity userEntity = findUserById(userId);
+        UserEntity userEntity = (UserEntity)findUserById(userId);
         userEntity.setStatus(UserStatus.DELETED);
-        userEntity.setUpdatedAt(Instant.from(LocalDateTime.now()));
+        userEntity.setUpdatedAt(Instant.now());
         log.debug("Removed user details: {}", userEntity);
         userRepository.save(userEntity);
         log.info("remove user finished");
         return modelMapper.map(userEntity, UserResponse.class);
     }
 
-@Transactional
-    public List<UserResponse> purgeUsers() {
+    @Transactional
+    public List<UserResponse> purgeUsers() { //TODO добавить права(роли) на вызов //TODO вынести в другой ScheduledService
         log.info("purgeUsers started");
         Instant thirtyDaysAgo = ZonedDateTime.now().minusDays(30).toInstant();
         List<UserEntity> userEntityList = userRepository.findUserEntitiesByStatusContainsAndUpdatedAtBefore(UserStatus.DELETED, thirtyDaysAgo);
@@ -134,6 +121,68 @@ public class UserServiceImpl implements  UserService {
         return modelMapper.map(userEntity, UserResponse.class);
     }
 
+    public Page searchUsers(SearchUserRequest searchUserRequest) {
+        log.info("searchUsers started");
+        Pageable pageable = PageRequest.of(
+                searchUserRequest.getPage(),
+                searchUserRequest.getSize(),
+                Sort.by(searchUserRequest.getSort().split(","))
+        );
+        Specification<UserEntity> spec = isNotDeleted();
+
+        Specification<UserEntity> searchSpec = userSpecificationBuilder.buildFromRequest(searchUserRequest);
+
+        if (searchSpec != null) {
+            spec = spec.and(searchSpec);
+        }
+        Page<UserEntity> userPage = userRepository.findAll(spec, pageable);
+
+        // 6. Преобразуем Entity в Response DTO
+        return modelMapper.map(userPage, Page.class);
+    }
+
+    private void updateFirstNameIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
+        if(Optional.ofNullable(updateUserDto.getUserFirstName()).isEmpty()) {
+            return;
+        }
+        log.info("updateFirstNameIfPresent started");
+        user.setFirstName(user.getFirstName());
+        log.info("updateFirstNameIfPresent finished");
+    }
+    private void updateLastNameIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
+        if(Optional.ofNullable(updateUserDto.getUserLastName()).isEmpty()) {
+            return;
+        }
+        log.info("updateLastName started");
+        user.setLastName(user.getLastName());
+        log.info("updateLastName finished");
+    }
+    private void updateEmailIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
+        if(Optional.ofNullable(updateUserDto.getUserEmail()).isEmpty()) {
+            return;
+        }
+        log.info("updateEmail started");
+        validateEmailUniqueness(updateUserDto.getUserEmail(), user.getId());
+        user.setEmail(user.getEmail());
+        log.info("updateEmail finished");
+    }
+    private void updatePhoneNumberIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
+        if(Optional.ofNullable(updateUserDto.getUserPhoneNumber()).isEmpty()) {
+            return;
+        }
+        log.info("updateFirstNameIfPresent started");
+        validatePhoneUniqueness(updateUserDto.getUserPhoneNumber(), user.getId());
+        user.setPhoneNumber(user.getPhoneNumber());
+        log.info("updatePhoneNumber finished");
+    }
+    private void updateLycenseTypeIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
+        if(Optional.ofNullable(updateUserDto.getUserLicense()).isEmpty()) {
+            return;
+        }
+        log.info("updateFirstNameIfPresent started");
+        user.setLicenseType(user.getLicenseType());
+    }
+
     private void validateEmailUniqueness(String email, Long excludeUserId ){
         boolean exists;
         if(excludeUserId == null){
@@ -142,11 +191,11 @@ public class UserServiceImpl implements  UserService {
             exists = userRepository.existsUserEntityByEmailAndIdNot(email, excludeUserId);
         }
         if(exists){
-            log.warn("Attempt to use already taken email: {}", email);
-            throw new UserAlreadyExistsException(email); //TODO создать EmailAlreadyRegisteredException
+            log.warn("Attempt to use already taken email: {}", maskEmail(email));
+            throw new UserAlreadyExistsException(maskEmail(email));
         }
-        log.debug("Email {} validation passed", email); //TODO создать безопасность логирования mask for email
-        }
+        log.debug("Email {} validation passed", maskEmail(email));
+    }
 
     private void validatePhoneUniqueness(String phone, Long excludeUserId ){
         boolean exists;
@@ -156,13 +205,33 @@ public class UserServiceImpl implements  UserService {
             exists = userRepository.existsUserEntityByPhoneNumberAndIdNot(phone,excludeUserId);
         }
         if(exists){
-            log.warn("Attempt to use already taken phone number: {}", phone); //TODO создать PhoneNumberAlreadyRegisteredException
+            log.warn("Attempt to use already taken phone number: {}", maskPhone(phone));
+            throw new UserPhoneNumberAlreadyRegistered(maskPhone(phone));
         }
-        log.debug("Phone {} validation passed", phone);// TODO создать безопасность логирования mask for phone
+        log.debug("Phone {} validation passed", maskPhone(phone));// TODO создать безопасность логирования mask for phone
     }
-  private UserEntity findUserById(Long userId){
+    private UserEntity findUserById(Long userId){
         return (UserEntity) userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("User with" + userId + "not found"));
-  }
+                .orElseThrow(()-> new UserNotFoundException("User with " + userId + " not found"));
+    }
+
+    private String maskEmail(String email) {
+        int atIndex = email.indexOf('@');
+        if(atIndex > 2){
+            return email.substring(0,2) + "***" + email.substring(atIndex);
+        }
+        return "***@***";
+    }
+
+    private String maskPhone(String phone) { //TODO доделать проверки на разные страны, убрать хардкод
+        if(phone!=null&&phone.length()>10){
+            return phone.substring(0,3) + "****" + phone.substring(phone.length()-4);
+        }
+        return null;
+    }
+
 
 }
+
+
+
