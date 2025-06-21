@@ -20,7 +20,12 @@
         <module>user-service-model</module>
         <module>user-service-app</module>
     </modules>
-
+    <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.6</version>
+        <!-- запретить Maven искать этот POM в ../pom.xml -->
+</parent>
     <!-- НЕ ДОБАВЛЯЙТЕ СЮДА ЗАВИСИМОСТИ! -->
     <!-- Это родительский pom, он не должен зависеть от своих модулей -->
 </project>
