@@ -1,11 +1,11 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "NIXPACKS",
+    "buildCommand": "find . -name 'pom.xml' && ls -la && mvn clean install -DskipTests || (cd user-service-app && mvn clean package -DskipTests)"
   },
   "deploy": {
-    "numReplicas": 1,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "startCommand": "find . -name '*.jar' -type f ! -path '*/original/*' | head -1 | xargs java -jar",
+    "restartPolicyType": "ON_FAILURE"
   }
 }
