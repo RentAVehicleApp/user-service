@@ -1,26 +1,10 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
+# используем JDK 17
+FROM eclipse-temurin:17-jdk-jammy
 
-# Копируем pom файлы
-COPY pom.xml .
-COPY user-service-model/pom.xml user-service-model/
-COPY user-service-app/pom.xml user-service-app/
-
-# Загружаем зависимости
-RUN mvn dependency:go-offline -B
-
-# Копируем исходный код
-COPY user-service-model user-service-model/
-COPY user-service-app user-service-app/
-
-# Собираем проект
-RUN mvn clean package -DskipTests
-
-# Runtime
-FROM eclipse-temurin:21-jre
-WORKDIR /app
-
-COPY --from=builder /app/user-service-app/target/*.jar app.jar
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","/app.jar"]
