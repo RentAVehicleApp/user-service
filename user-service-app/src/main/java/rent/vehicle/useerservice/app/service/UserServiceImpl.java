@@ -43,8 +43,8 @@ public class UserServiceImpl implements  UserService {
     public UserResponse createUser(CreateUserDto createUserDto) {
         log.info("createUser started");
         log.debug("User details: {}", createUserDto);
-        validateEmailUniqueness(createUserDto.getUserEmail(), null);
-        validatePhoneUniqueness(createUserDto.getUserPhoneNumber(), null);
+        validateEmailUniqueness(createUserDto.getEmail(), null);
+        validatePhoneUniqueness(createUserDto.getPhoneNumber(), null);
         try {
             UserEntity userEntity = modelMapper.map(createUserDto, UserEntity.class);
             userRepository.save(userEntity);
@@ -60,8 +60,7 @@ public class UserServiceImpl implements  UserService {
 
     @Override
     public UserResponse getUser(long userId) {
-        log.info("getUser started");
-        UserEntity userEntity = userRepository.findUserEntityById(userId);
+        UserEntity userEntity = findUserById(userId); // уже выбросит исключение если не найден
         return modelMapper.map(userEntity, UserResponse.class);
     }
     @Transactional
@@ -91,7 +90,7 @@ public class UserServiceImpl implements  UserService {
     @Override
     public UserResponse removeUser(long userId) {
         log.info("removeUser started");
-        UserEntity userEntity = (UserEntity)findUserById(userId);
+        UserEntity userEntity = findUserById(userId);
         userEntity.setStatus(UserStatus.DELETED);
         userEntity.setUpdatedAt(Instant.now());
         log.debug("Removed user details: {}", userEntity);
@@ -104,7 +103,7 @@ public class UserServiceImpl implements  UserService {
     public List<UserResponse> purgeUsers() { //TODO добавить права(роли) на вызов //TODO вынести в другой ScheduledService
         log.info("purgeUsers started");
         Instant thirtyDaysAgo = ZonedDateTime.now().minusDays(30).toInstant();
-        List<UserEntity> userEntityList = userRepository.findUserEntitiesByStatusContainsAndUpdatedAtBefore(UserStatus.DELETED, thirtyDaysAgo);
+        List<UserEntity> userEntityList = userRepository.findUserEntitiesByStatusAndUpdatedAtBefore(UserStatus.DELETED, thirtyDaysAgo);
         log.debug("Users about to purge: {}", userEntityList);
         userRepository.deleteAll(userEntityList);
         log.info("purgeUsers finished");
@@ -121,32 +120,30 @@ public class UserServiceImpl implements  UserService {
         return modelMapper.map(userEntity, UserResponse.class);
     }
 
-    public Page searchUsers(SearchUserRequest searchUserRequest) {
-        log.info("searchUsers started");
-        Pageable pageable = PageRequest.of(
-                searchUserRequest.getPage(),
-                searchUserRequest.getSize(),
-                Sort.by(searchUserRequest.getSort().split(","))
-        );
-        Specification<UserEntity> spec = isNotDeleted();
+    public Page<UserResponse> searchUsers(SearchUserRequest req) {
+        // Разбор sort-параметра
+        String[] parts = req.getSort().split(",");
+        String sortField = parts[0];
+        Sort.Direction direction = parts.length > 1
+                ? Sort.Direction.fromString(parts[1].trim())
+                : Sort.Direction.ASC; // по умолчанию ASC, если не указано
 
-        Specification<UserEntity> searchSpec = userSpecificationBuilder.buildFromRequest(searchUserRequest);
+        Sort sort = Sort.by(new Sort.Order(direction, sortField));
 
-        if (searchSpec != null) {
-            spec = spec.and(searchSpec);
-        }
-        Page<UserEntity> userPage = userRepository.findAll(spec, pageable);
+        Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), sort);
 
-        // 6. Преобразуем Entity в Response DTO
-        return modelMapper.map(userPage, Page.class);
+        Specification<UserEntity> spec = userSpecificationBuilder.buildFromRequest(req);
+        Page<UserEntity> page = userRepository.findAll(spec, pageable);
+        return page.map(entity -> modelMapper.map(entity, UserResponse.class));
     }
+
 
     private void updateFirstNameIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
         if(Optional.ofNullable(updateUserDto.getUserFirstName()).isEmpty()) {
             return;
         }
         log.info("updateFirstNameIfPresent started");
-        user.setFirstName(user.getFirstName());
+        user.setFirstName(updateUserDto.getUserFirstName());
         log.info("updateFirstNameIfPresent finished");
     }
     private void updateLastNameIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
@@ -154,7 +151,7 @@ public class UserServiceImpl implements  UserService {
             return;
         }
         log.info("updateLastName started");
-        user.setLastName(user.getLastName());
+        user.setLastName(updateUserDto.getUserLastName());
         log.info("updateLastName finished");
     }
     private void updateEmailIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
@@ -163,7 +160,7 @@ public class UserServiceImpl implements  UserService {
         }
         log.info("updateEmail started");
         validateEmailUniqueness(updateUserDto.getUserEmail(), user.getId());
-        user.setEmail(user.getEmail());
+        user.setEmail(updateUserDto.getUserEmail());
         log.info("updateEmail finished");
     }
     private void updatePhoneNumberIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
@@ -172,7 +169,7 @@ public class UserServiceImpl implements  UserService {
         }
         log.info("updateFirstNameIfPresent started");
         validatePhoneUniqueness(updateUserDto.getUserPhoneNumber(), user.getId());
-        user.setPhoneNumber(user.getPhoneNumber());
+        user.setPhoneNumber(updateUserDto.getUserPhoneNumber());
         log.info("updatePhoneNumber finished");
     }
     private void updateLycenseTypeIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
@@ -180,7 +177,7 @@ public class UserServiceImpl implements  UserService {
             return;
         }
         log.info("updateFirstNameIfPresent started");
-        user.setLicenseType(user.getLicenseType());
+        user.setLicenseType(updateUserDto.getUserLicense());
     }
 
     private void validateEmailUniqueness(String email, Long excludeUserId ){
@@ -211,7 +208,7 @@ public class UserServiceImpl implements  UserService {
         log.debug("Phone {} validation passed", maskPhone(phone));// TODO создать безопасность логирования mask for phone
     }
     private UserEntity findUserById(Long userId){
-        return (UserEntity) userRepository.findById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("User with " + userId + " not found"));
     }
 

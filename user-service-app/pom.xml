@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>rent.vehicle</groupId>
-    <artifactId>useer-service-app</artifactId>
+    <artifactId>user-service-app</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>useer-service-app</name>
     <description>useer-service-app</description>

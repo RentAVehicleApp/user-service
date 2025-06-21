@@ -61,6 +61,12 @@ public class UserEntity {
     public void prePersist() {
         createdAt = Instant.now();
         updatedAt = createdAt;
+        if (status == null) {
+            status = UserStatus.ACTIVE; // Устанавливаем статус по умолчанию
+        }
+        if (roles == null) {
+            roles = List.of(UserRole.USER); // Роль по умолчанию
+        }
     }
 
     @PreUpdate

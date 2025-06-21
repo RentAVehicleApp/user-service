@@ -11,30 +11,31 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class CreateUserDto {
+    //TODO исправить и совместить с UserEntity
     @NotNull
-    private long userId;
+    private Long id;
 
     @NotBlank
-    private String userFirstName;
+    private String firstName;
 
     @NotBlank
-    private String userLastName;
+    private String lastName;
 
     @NotNull
     @Email
-    private String userEmail;
+    private String email;
 
     @NotBlank
     @Pattern(regexp = "^\\+?[0-9]{9,15}$")
-    private String userPhoneNumber;
+    private String phoneNumber;
 
     @NotNull
     @Past
-    @MinAge(16)            // кастомная аннотация, проверяющая, что возраст ≥ 16 лет
-    private LocalDate userBirthDate;
+   // @MinAge(16)            // кастомная аннотация, проверяющая, что возраст ≥ 16 лет
+    private LocalDate birthDate;
 
     @NotNull
-    private UserLicenseType userLicense;
+    private UserLicenseType licenseType;
 
     @NotBlank
     private String drivingLicenseNumber;

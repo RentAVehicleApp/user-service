@@ -14,27 +14,21 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<UserEntity,String>, JpaSpecificationExecutor<UserEntity> {
+public interface UserRepository extends JpaRepository<UserEntity,Long>, JpaSpecificationExecutor<UserEntity> {
     UserEntity findUserEntityByEmail(String email);
 
     UserEntity findUserEntityByPhoneNumber(String phoneNumber);
 
-    boolean existsUserEntityByEmailAndIdNot(String email, Long id);
-
-    @Query("SELECT u FROM UserEntity u WHERE u.status = 'ACTIVE'" +
-            "AND u.email LIKE %:search% OR u.phoneNumber LIKE %:search%")
-    Page<UserEntity> findActiveUsers(@Param("search") String search, Pageable pageable);
+    @Query("SELECT u FROM UserEntity u WHERE u.status = :status " +
+            "AND (u.email LIKE %:search% OR u.phoneNumber LIKE %:search%)")
+    Page<UserEntity> findActiveUsers(@Param("search") String search, @Param("status")UserStatus userStatus, Pageable pageable);
 
 
     boolean existsUserEntityByEmail(String email);
-
+    boolean existsUserEntityByEmailAndIdNot(String email, Long id);
     boolean existsUserEntityByPhoneNumber(String phoneNumber);
+    boolean existsUserEntityByPhoneNumberAndIdNot(String phoneNumber, Long id);
 
-    boolean existsUserEntityByPhoneNumberAndIdNot(String phone, Long excludeUserId);
 
-    Optional<Object> findById(Long userId);
-
-    UserEntity findUserEntityById(Long id);
-
-    List<UserEntity> findUserEntitiesByStatusContainsAndUpdatedAtBefore(UserStatus status, Instant updatedAtBefore);
+    List<UserEntity> findUserEntitiesByStatusAndUpdatedAtBefore(UserStatus status, Instant updatedAt);
 }

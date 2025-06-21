@@ -1,5 +1,6 @@
 package rent.vehicle.useerservice.app.service.specification;
 
+import jakarta.persistence.criteria.Path;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import rent.vehicle.dto.request.SearchCriteria;
@@ -28,27 +29,63 @@ public class UserSpecificationBuilder {
                 .reduce(Specification::and)
                 .orElse(null);
     }
-    private Specification<UserEntity> buildFromCriteria(SearchCriteria searchCriteria) {
-        return(root,query,cb)-> {
-            return switch (searchCriteria.getOperation()) {
-                case EQUALS -> cb.equal(root.get(searchCriteria.getFilter()), searchCriteria.getValue());
-                case NOT_EQUALS -> cb.notEqual(root.get(searchCriteria.getFilter()), searchCriteria.getValue());
-                case CONTAINS -> {
-                    String likePattern = '%' + searchCriteria.getValue().toString().toLowerCase() + '%';
-                    yield cb.like(
-                            cb.lower(root.get(searchCriteria.getFilter())), likePattern
+    private Specification<UserEntity> buildFromCriteria(SearchCriteria criteria) {
+        return (root, query, cb) -> {
+            String field = criteria.getFilter();
+            Path<?> path = root.get(field);
+            Class<?> javaType = path.getJavaType();
+
+            // конвертация строки в нужный тип
+            Object value;
+            String stringValue = criteria.getValue();
+            if (javaType.isEnum()) {
+                @SuppressWarnings("unchecked")
+                Class<? extends Enum> enumType = (Class<? extends Enum>) javaType;
+                value = Enum.valueOf(enumType, stringValue);
+            } else {
+                value = stringValue;
+            }
+
+            switch (criteria.getOperation()) {
+                case EQUALS:
+                    return cb.equal(path, value);
+
+                case NOT_EQUALS:
+                    return cb.notEqual(path, value);
+
+                case CONTAINS:
+                    return cb.like(
+                            cb.lower(root.get(field).as(String.class)),
+                            "%" + stringValue.toLowerCase() + "%"
                     );
-                }
-                case STARTS_WITH ->
-                        cb.like(root.get(searchCriteria.getFilter()), searchCriteria.getValue().toString().toLowerCase() + '%');
-                case END_WITH ->
-                        cb.like(root.get(searchCriteria.getFilter()), "%" + searchCriteria.getValue().toString().toLowerCase());
-                case GREATER_THAN -> cb.greaterThan(root.get(searchCriteria.getFilter()),
-                        (Comparable) searchCriteria.getValue());
-                case LESS_THAN -> cb.lessThan(root.get(searchCriteria.getFilter()),
-                        (Comparable) searchCriteria.getValue());
-                default -> null;
-            };
+
+                case STARTS_WITH:
+                    return cb.like(
+                            cb.lower(root.get(field).as(String.class)),
+                            stringValue.toLowerCase() + "%"
+                    );
+
+                case END_WITH:
+                    return cb.like(
+                            cb.lower(root.get(field).as(String.class)),
+                            "%" + stringValue.toLowerCase()
+                    );
+
+                case GREATER_THAN:
+                    @SuppressWarnings("unchecked")
+                    Comparable<Object> compGt = (Comparable<Object>) value;
+                    return cb.greaterThan(root.get(field).as(compGt.getClass()), compGt);
+
+                case LESS_THAN:
+                    @SuppressWarnings("unchecked")
+                    Comparable<Object> compLt = (Comparable<Object>) value;
+                    return cb.lessThan(root.get(field).as(compLt.getClass()), compLt);
+
+                default:
+                    return null;
+            }
         };
     }
+
 }
+
