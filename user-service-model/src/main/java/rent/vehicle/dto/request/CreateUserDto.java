@@ -8,8 +8,6 @@ import rent.vehicle.enums.UserLicenseType;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
-
 @Getter
 @Setter
 public class CreateUserDto {
@@ -41,8 +39,6 @@ public class CreateUserDto {
 
     @NotBlank
     private String drivingLicenseNumber;
-
-    private List<CreateAdressDto> adresses;
 
     private Instant createdAt;
 

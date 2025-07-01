@@ -10,7 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import rent.vehicle.dto.request.CreateAdressDto;
 import rent.vehicle.dto.request.CreateUserDto;
 import rent.vehicle.dto.request.SearchUserRequest;
 import rent.vehicle.dto.request.UpdateUserDto;
@@ -19,9 +18,7 @@ import rent.vehicle.enums.UserStatus;
 import rent.vehicle.exception.UserAlreadyExistsException;
 import rent.vehicle.exception.UserNotFoundException;
 import rent.vehicle.exception.UserPhoneNumberAlreadyRegistered;
-import rent.vehicle.useerservice.app.domain.AdressEntity;
 import rent.vehicle.useerservice.app.domain.UserEntity;
-import rent.vehicle.useerservice.app.repository.AdressRepository;
 import rent.vehicle.useerservice.app.repository.UserRepository;
 import rent.vehicle.useerservice.app.service.specification.UserSpecificationBuilder;
 
@@ -40,30 +37,15 @@ public class UserServiceImpl implements  UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final UserSpecificationBuilder userSpecificationBuilder;
-    private final AdressRepository adressRepository;
 
     @Transactional
     @Override
     public UserResponse createUser(CreateUserDto createUserDto) {
-        if(findUserById(createUserDto.getId())==null){
-            //TODO add exception throw
-            return null;
-        }
         log.info("createUser started");
         log.debug("User details: {}", createUserDto);
         validateEmailUniqueness(createUserDto.getEmail(), null);
         validatePhoneUniqueness(createUserDto.getPhoneNumber(), null);
         try {
-            List<AdressEntity> saved = createUserDto.getAdresses().stream()
-                    // 1) фильтруем DTO по отсутствию в БД
-                    .filter(dto -> !adressRepository.existsById(dto.getId()))
-                    // 2) мапим сразу в сущность
-                    .map(dto -> modelMapper.map(dto, AdressEntity.class))
-                    // 3) собираем и сразу сохраняем пачкой
-                    .collect(Collectors.collectingAndThen(
-                            Collectors.toList(),
-                            adressRepository::saveAll
-                    ));
             UserEntity userEntity = modelMapper.map(createUserDto, UserEntity.class);
             userRepository.save(userEntity);
             return modelMapper.map(userEntity, UserResponse.class);
@@ -86,7 +68,7 @@ public class UserServiceImpl implements  UserService {
     public UserResponse updateUser(long userId, UpdateUserDto updateUserDto) {
         log.info("updateUser started");
         log.debug("User details: {}", updateUserDto);
-        try {//TODO добавить обновление адреса
+        try {
             UserEntity userEntity = (UserEntity) findUserById(userId);
             updateFirstNameIfPresent(updateUserDto, userEntity);
             updateLastNameIfPresent(updateUserDto, userEntity);
@@ -107,7 +89,6 @@ public class UserServiceImpl implements  UserService {
     @Transactional
     @Override
     public UserResponse removeUser(long userId) {
-        //TODO добавить удаление адреса
         log.info("removeUser started");
         UserEntity userEntity = findUserById(userId);
         userEntity.setStatus(UserStatus.DELETED);
@@ -154,16 +135,6 @@ public class UserServiceImpl implements  UserService {
         Specification<UserEntity> spec = userSpecificationBuilder.buildFromRequest(req);
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
         return page.map(entity -> modelMapper.map(entity, UserResponse.class));
-    }
-
-    @Override
-    public List<AdressEntity> getAdresses(Long userId, Pageable pageable) {
-        UserEntity userEntity = findUserById(userId);
-        if (userEntity != null) {
-            List<AdressEntity> adressEntityPage = userEntity.getAdresses();
-            return adressEntityPage;
-        }
-        return null;
     }
 
 
