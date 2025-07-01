@@ -2,13 +2,17 @@ package rent.vehicle.useerservice.app.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rent.vehicle.dto.request.CreateUserDto;
 import rent.vehicle.dto.request.SearchUserRequest;
 import rent.vehicle.dto.request.UpdateUserDto;
 import rent.vehicle.dto.response.UserResponse;
+import rent.vehicle.useerservice.app.domain.AdressEntity;
 import rent.vehicle.useerservice.app.service.UserService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -41,4 +45,9 @@ public class UserController {
     public Page<UserResponse> searchUsers (@RequestBody SearchUserRequest searchUserRequest) {
         return userService.searchUsers(searchUserRequest);
     }
+    @GetMapping("/{user_id}/adress")
+    public List<AdressEntity> getAdress(@PathVariable Long userId, Pageable pageable) {
+        return userService.getAdresses(userId,pageable);
+    }
+
 }

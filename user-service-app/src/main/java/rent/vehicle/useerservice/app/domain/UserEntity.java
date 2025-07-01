@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserEntity {
     @Id
+    @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -54,6 +55,9 @@ public class UserEntity {
 
     @Column(name = "roles")
     private List<UserRole> roles;
+    @Column
+    @OneToMany(mappedBy = "user")
+    private List<AdressEntity> adresses;
 
     // геттеры/сеттеры или Lombok @Getter/@Setter
 
