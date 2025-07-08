@@ -16,7 +16,11 @@ import rent.vehicle.useerservice.app.service.UserService;
 @Validated
 public class UserController {
     final UserService userService;
-
+    
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
     @PostMapping
     public UserResponse createUser(@RequestBody CreateUserDto createUserDto) {
         return userService.createUser(createUserDto);
