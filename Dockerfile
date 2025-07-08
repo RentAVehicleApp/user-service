@@ -22,5 +22,6 @@ WORKDIR /app
 
 COPY --from=builder /app/user-service-app/target/*.jar app.jar
 
-EXPOSE ${PORT}
-ENTRYPOINT ["java", "-Dserver.port=${PORT}", "-jar", "app.jar"]
+# Не нужно EXPOSE для Railway
+# Используем shell форму для поддержки переменных
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
