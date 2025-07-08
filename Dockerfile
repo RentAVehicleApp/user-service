@@ -22,5 +22,5 @@ WORKDIR /app
 
 COPY --from=builder /app/user-service-app/target/*.jar app.jar
 
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE ${PORT}
+ENTRYPOINT ["java", "-Dserver.port=${PORT}", "-jar", "app.jar"]
