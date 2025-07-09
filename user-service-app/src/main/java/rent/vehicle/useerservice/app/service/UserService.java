@@ -18,4 +18,6 @@ public interface UserService {
     UserResponse getUserByEmail(String email);
 
     Page<UserResponse> searchUsers(SearchUserRequest searchUserRequest);
+
+    Page<UserResponse> getAllUsers();
 }

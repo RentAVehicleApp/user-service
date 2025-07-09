@@ -137,6 +137,13 @@ public class UserServiceImpl implements  UserService {
         return page.map(entity -> modelMapper.map(entity, UserResponse.class));
     }
 
+    @Override
+    public Page<UserResponse> getAllUsers() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<UserEntity> page = userRepository.findAll(pageable);
+        return page.map(entity -> modelMapper.map(entity, UserResponse.class));
+    }
+
 
     private void updateFirstNameIfPresent(UpdateUserDto updateUserDto, UserEntity user) {
         if(Optional.ofNullable(updateUserDto.getUserFirstName()).isEmpty()) {
