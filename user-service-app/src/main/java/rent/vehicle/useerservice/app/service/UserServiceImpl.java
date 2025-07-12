@@ -2,6 +2,7 @@ package rent.vehicle.useerservice.app.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +21,7 @@ import rent.vehicle.exception.UserNotFoundException;
 import rent.vehicle.exception.UserPhoneNumberAlreadyRegistered;
 import rent.vehicle.useerservice.app.domain.UserEntity;
 import rent.vehicle.useerservice.app.repository.UserRepository;
+import rent.vehicle.useerservice.app.service.specification.UserSpecification;
 import rent.vehicle.useerservice.app.service.specification.UserSpecificationBuilder;
 
 import java.time.Instant;
@@ -140,7 +142,8 @@ public class UserServiceImpl implements  UserService {
     @Override
     public Page<UserResponse> getAllUsers() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<UserEntity> page = userRepository.findAll(pageable);
+        Specification<UserEntity> spec = UserSpecification.isNotDeleted();
+        Page<UserEntity> page = userRepository.findAll(spec, pageable);
         return page.map(entity -> modelMapper.map(entity, UserResponse.class));
     }
 

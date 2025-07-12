@@ -46,7 +46,7 @@ public class UserController {
         return userService.searchUsers(searchUserRequest);
     }
     @GetMapping("/all")
-    public Page<UserResponse> getAllUsers() {
+    public Page<UserResponse> getAllActiveUsers() {
         return userService.getAllUsers();
     }
 }

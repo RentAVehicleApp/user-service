@@ -11,9 +11,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class CreateUserDto {
-    //TODO исправить и совместить с UserEntity
-    @NotNull
-    private Long id;
 
     @NotBlank
     private String firstName;
