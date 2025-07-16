@@ -16,11 +16,11 @@ import java.util.List;
 public interface CustomerRepository extends JpaRepository<CustomerEntity,Long>, JpaSpecificationExecutor<CustomerEntity> {
     CustomerEntity findUserEntityByEmail(String email);
 
-    CustomerEntity findUserEntityByPhoneNumber(String phoneNumber);
-
-    @Query("SELECT u FROM CustomerEntity u WHERE u.status = :status " +
-            "AND (u.email LIKE %:search% OR u.phoneNumber LIKE %:search%)")
-    CustomPage<CustomerEntity> findActiveUsers(@Param("search") String search, @Param("status") CustomerStatus customerStatus, Pageable pageable);
+//    CustomerEntity findUserEntityByPhoneNumber(String phoneNumber);
+//
+//    @Query("SELECT u FROM CustomerEntity u WHERE u.status = :status " +
+//            "AND (u.email LIKE %:search% OR u.phoneNumber LIKE %:search%)")
+//    CustomPage<CustomerEntity> findActiveUsers(@Param("search") String search, @Param("status") CustomerStatus customerStatus, Pageable pageable);
 
 
     boolean existsUserEntityByEmail(String email);
