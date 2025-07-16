@@ -4,13 +4,13 @@ import jakarta.validation.constraints.*;
 
 import lombok.Getter;
 import lombok.Setter;
-import rent.vehicle.enums.UserLicenseType;
+import rent.vehicle.enums.CustomerLicenseType;
 
 import java.time.Instant;
 import java.time.LocalDate;
 @Getter
 @Setter
-public class CreateUserDto {
+public class CreateCustomerDto {
 
     @NotBlank
     private String firstName;
@@ -32,7 +32,7 @@ public class CreateUserDto {
     private LocalDate birthDate;
 
     @NotNull
-    private UserLicenseType licenseType;
+    private CustomerLicenseType licenseType;
 
     @NotBlank
     private String drivingLicenseNumber;

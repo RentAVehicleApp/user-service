@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import rent.vehicle.enums.UserLicenseType;
-import rent.vehicle.enums.UserRole;
-import rent.vehicle.enums.UserStatus;
+import rent.vehicle.enums.CustomerLicenseType;
+import rent.vehicle.enums.CustomerRole;
+import rent.vehicle.enums.CustomerStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 @Entity
 @RequiredArgsConstructor
-public class UserEntity {
+public class CustomerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +38,7 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "license_type", nullable = false)
-    private UserLicenseType licenseType;
+    private CustomerLicenseType licenseType;
 
     @Column(name = "license_number", nullable = false, unique = true)
     private String drivingLicenseNumber;
@@ -50,10 +50,10 @@ public class UserEntity {
     private Instant updatedAt;
 
     @Column(name = "status")
-    private UserStatus status;
+    private CustomerStatus status;
 
     @Column(name = "roles")
-    private List<UserRole> roles;
+    private List<CustomerRole> roles;
 
     // геттеры/сеттеры или Lombok @Getter/@Setter
 
@@ -62,10 +62,10 @@ public class UserEntity {
         createdAt = Instant.now();
         updatedAt = createdAt;
         if (status == null) {
-            status = UserStatus.ACTIVE; // Устанавливаем статус по умолчанию
+            status = CustomerStatus.ACTIVE; // Устанавливаем статус по умолчанию
         }
         if (roles == null) {
-            roles = List.of(UserRole.USER); // Роль по умолчанию
+            roles = List.of(CustomerRole.USER); // Роль по умолчанию
         }
     }
 

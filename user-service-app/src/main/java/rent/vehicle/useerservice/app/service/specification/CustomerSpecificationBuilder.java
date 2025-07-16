@@ -4,23 +4,22 @@ import jakarta.persistence.criteria.Path;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import rent.vehicle.dto.request.SearchCriteria;
-import rent.vehicle.dto.request.SearchUserRequest;
-import rent.vehicle.useerservice.app.domain.UserEntity;
+import rent.vehicle.dto.request.SearchCustomerRequest;
+import rent.vehicle.useerservice.app.domain.CustomerEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 @Component
-public class UserSpecificationBuilder {
-    public Specification<UserEntity> buildFromRequest(SearchUserRequest searchUserRequest) {
+public class CustomerSpecificationBuilder {
+    public Specification<CustomerEntity> buildFromRequest(SearchCustomerRequest searchUserRequest) {
         if(searchUserRequest.getSearchCriteria()==null || searchUserRequest.getSearchCriteria().isEmpty()){
             return null;
         }
 
         List<SearchCriteria> searchCriteria = searchUserRequest.getSearchCriteria();
 
-        List<Specification<UserEntity>> specifications = searchCriteria.stream()
+        List<Specification<CustomerEntity>> specifications = searchCriteria.stream()
                 .map(this::buildFromCriteria)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -29,7 +28,7 @@ public class UserSpecificationBuilder {
                 .reduce(Specification::and)
                 .orElse(null);
     }
-    private Specification<UserEntity> buildFromCriteria(SearchCriteria criteria) {
+    private Specification<CustomerEntity> buildFromCriteria(SearchCriteria criteria) {
         return (root, query, cb) -> {
             String field = criteria.getFilter();
             Path<?> path = root.get(field);

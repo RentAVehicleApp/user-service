@@ -1,6 +1,6 @@
 package rent.vehicle.enums;
 
-public enum UserRole {
+public enum CustomerRole {
     USER,
     ADMIN,
     MODERATOR

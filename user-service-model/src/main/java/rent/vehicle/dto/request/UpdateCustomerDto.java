@@ -3,12 +3,12 @@ package rent.vehicle.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
-import rent.vehicle.enums.UserLicenseType;
+import rent.vehicle.enums.CustomerLicenseType;
 
 import java.time.Instant;
-import java.time.LocalDate;
+
 @Getter
-public class UpdateUserDto {
+public class UpdateCustomerDto {
 
     private String userFirstName;
     private String userLastName;
@@ -18,7 +18,7 @@ public class UpdateUserDto {
     private String userPhoneNumber;
 
 
-    private UserLicenseType userLicense;
+    private CustomerLicenseType userLicense;
 
 
     private Instant updatedAt;

@@ -1,6 +1,6 @@
 package rent.vehicle.enums;
 
-public enum UserStatus {
+public enum CustomerStatus {
     ACTIVE,
     BLOCKED,
     DELETED

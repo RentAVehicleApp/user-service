@@ -1,6 +1,5 @@
 package rent.vehicle.exception;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import rent.vehicle.dto.response.ErrorResponse;
-import java.nio.file.attribute.UserPrincipalNotFoundException;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,9 +42,9 @@ public class GlobalExceptionHandler {
 
     }
     // User not found exception handler
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(CustomerNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserPrincipalNotFoundException(
-            UserNotFoundException ex,
+            CustomerNotFoundException ex,
             WebRequest request
     ){
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -60,9 +59,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
     //User already exists exception handler
-    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler(CustomerAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(
-            UserAlreadyExistsException ex,
+            CustomerAlreadyExistsException ex,
             WebRequest request
     ){
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -76,9 +75,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
     //Users age is unacceptable exception handler
-    @ExceptionHandler(InvalidUserAgeException.class)
+    @ExceptionHandler(InvalidCustomerAgeException.class)
     public ResponseEntity<ErrorResponse> handleInvalidUserAgeException(
-            InvalidUserAgeException ex,
+            InvalidCustomerAgeException ex,
             WebRequest request
     ){
         ErrorResponse errorResponse = ErrorResponse.builder()

@@ -1,6 +1,6 @@
 package rent.vehicle.enums;
 
-public enum UserLicenseType {
+public enum CustomerLicenseType {
         NONE, // e-байк ≤250 Вт/25 км/ч — без лицензии
         A3,   // спец. лицензия для e-самокатов и мощных e-байков
         A1,   // мотоциклы до 125 см³ / 11 кВт
