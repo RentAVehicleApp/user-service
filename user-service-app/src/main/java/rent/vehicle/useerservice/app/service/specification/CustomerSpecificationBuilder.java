@@ -1,25 +1,32 @@
-package rent.vehicle.useerservice.app.service.specification;
+package rent.vehicle.workerserviceapp.service.specification;
 
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import rent.vehicle.dto.request.SearchCriteria;
 import rent.vehicle.dto.request.SearchCustomerRequest;
-import rent.vehicle.useerservice.app.domain.CustomerEntity;
 
+
+
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 @Component
-public class CustomerSpecificationBuilder {
-    public Specification<CustomerEntity> buildFromRequest(SearchCustomerRequest searchUserRequest) {
-        if(searchUserRequest.getSearchCriteria()==null || searchUserRequest.getSearchCriteria().isEmpty()){
-            return null;
+public class CustomerSpecificationBuilder<T> {
+    public Specification buildFromRequest(SearchCustomerRequest request) {
+        if(request.getSearchCriteriaList()!=null && request.getSearchCriteriaList().isEmpty()){
+            return  null;
         }
 
-        List<SearchCriteria> searchCriteria = searchUserRequest.getSearchCriteria();
+        List<SearchCriteria> searchCriteriaList = request.getSearchCriteriaList();
 
-        List<Specification<CustomerEntity>> specifications = searchCriteria.stream()
+        List<Specification> specifications = searchCriteriaList.stream()
                 .map(this::buildFromCriteria)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -28,63 +35,64 @@ public class CustomerSpecificationBuilder {
                 .reduce(Specification::and)
                 .orElse(null);
     }
-    private Specification<CustomerEntity> buildFromCriteria(SearchCriteria criteria) {
-        return (root, query, cb) -> {
-            String field = criteria.getFilter();
-            Path<?> path = root.get(field);
+    private Specification<T> buildFromCriteria(SearchCriteria searchCriteria) {
+        return(root, query, criteriaBuilder) -> {
+            String field = searchCriteria.getFilter();
+            // Вместо простого root.get(field)
+            Path<?> path = root;
+            String[] fieldParts = field.split("\\.");
+            for (String part : fieldParts) {
+                if (path instanceof Root || path instanceof Join) {
+                    path = ((From<?, ?>) path).get(part);
+                } else {
+                    path = path.get(part);
+                }
+            }
             Class<?> javaType = path.getJavaType();
 
-            // конвертация строки в нужный тип
-            Object value;
-            String stringValue = criteria.getValue();
-            if (javaType.isEnum()) {
-                @SuppressWarnings("unchecked")
-                Class<? extends Enum> enumType = (Class<? extends Enum>) javaType;
-                value = Enum.valueOf(enumType, stringValue);
-            } else {
+            Object value = null;
+            String stringValue = searchCriteria.getValue();
+            if(javaType.isEnum()){
+                value = convertToEnum(javaType, stringValue);
+            }else if(javaType==Long.class){
+                value = Long.parseLong(stringValue);
+            }else if(javaType== Instant.class){
+                value = Instant.parse(stringValue);
+            }else{
                 value = stringValue;
             }
-
-            switch (criteria.getOperation()) {
-                case EQUALS:
-                    return cb.equal(path, value);
-
-                case NOT_EQUALS:
-                    return cb.notEqual(path, value);
-
-                case CONTAINS:
-                    return cb.like(
-                            cb.lower(root.get(field).as(String.class)),
-                            "%" + stringValue.toLowerCase() + "%"
-                    );
-
-                case STARTS_WITH:
-                    return cb.like(
-                            cb.lower(root.get(field).as(String.class)),
-                            stringValue.toLowerCase() + "%"
-                    );
-
-                case END_WITH:
-                    return cb.like(
-                            cb.lower(root.get(field).as(String.class)),
-                            "%" + stringValue.toLowerCase()
-                    );
-
-                case GREATER_THAN:
+            return switch (searchCriteria.getOperation()) {
+                case EQUALS -> criteriaBuilder.equal(path, value);
+                case NOT_EQUALS -> criteriaBuilder.notEqual(path, value);
+                case CONTAINS -> criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get(field).as(String.class)),
+                        "%" + stringValue.toLowerCase() + "%"
+                );
+                case STARTS_WITH -> criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get(field).as(String.class)),
+                        stringValue.toLowerCase() + "%"
+                );
+                case END_WITH -> criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get(field).as(String.class)),
+                        "%" + stringValue.toLowerCase()
+                );
+                case GREATER_THAN -> {
                     @SuppressWarnings("unchecked")
                     Comparable<Object> compGt = (Comparable<Object>) value;
-                    return cb.greaterThan(root.get(field).as(compGt.getClass()), compGt);
-
-                case LESS_THAN:
+                    yield criteriaBuilder.greaterThan(root.get(field).as(compGt.getClass()), compGt);
+                }
+                case LESS_THAN -> {
                     @SuppressWarnings("unchecked")
                     Comparable<Object> compLt = (Comparable<Object>) value;
-                    return cb.lessThan(root.get(field).as(compLt.getClass()), compLt);
-
-                default:
-                    return null;
-            }
+                    yield criteriaBuilder.lessThan(root.get(field).as(compLt.getClass()), compLt);
+                }
+                default -> null;
+            };
         };
+
     }
-
+    @SuppressWarnings("unchecked")
+    private <T extends Enum<T>> T convertToEnum(Class<?> enumClass, String value) {
+        return Enum.valueOf((Class<T>) enumClass, value);
+    }
 }
-
