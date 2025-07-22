@@ -1,9 +1,8 @@
 package rent.vehicle.useerservice.app.service;
 
-import org.springframework.data.domain.Page;
 import rent.vehicle.common.CustomPage;
 import rent.vehicle.dto.request.CreateCustomerDto;
-import rent.vehicle.dto.request.SearchCustomerRequest;
+import rent.vehicle.dto.request.GenericSearchRequest;
 import rent.vehicle.dto.request.UpdateCustomerDto;
 import rent.vehicle.dto.response.CustomerResponse;
 
@@ -18,7 +17,7 @@ public interface CustomerService {
 
     CustomerResponse getCustomerByEmail(String email);
 
-    CustomPage<CustomerResponse> searchAllCustomers(SearchCustomerRequest searchUserRequest);
+    CustomPage<CustomerResponse> searchAllCustomers(GenericSearchRequest searchUserRequest);
 
     CustomPage<CustomerResponse> getAllCustomers();
 

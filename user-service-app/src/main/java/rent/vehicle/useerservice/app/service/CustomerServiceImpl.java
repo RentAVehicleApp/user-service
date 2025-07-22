@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rent.vehicle.common.CustomPage;
 import rent.vehicle.dto.request.CreateCustomerDto;
-import rent.vehicle.dto.request.SearchCustomerRequest;
+import rent.vehicle.dto.request.GenericSearchRequest;
 import rent.vehicle.dto.request.UpdateCustomerDto;
 import rent.vehicle.dto.response.CustomerResponse;
 import rent.vehicle.enums.CustomerStatus;
@@ -23,6 +23,7 @@ import rent.vehicle.useerservice.app.domain.CustomerEntity;
 import rent.vehicle.useerservice.app.repository.CustomerRepository;
 import rent.vehicle.useerservice.app.service.specification.CustomerSpecification;
 import rent.vehicle.useerservice.app.service.specification.CustomerSpecificationBuilder;
+
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final ModelMapper modelMapper;
-    private final CustomerSpecificationBuilder customerSpecificationBuilder;
+    private final CustomerSpecificationBuilder<CustomerEntity> customerSpecificationBuilder;
 
     @Transactional
     @Override
@@ -120,7 +121,7 @@ public class CustomerServiceImpl implements CustomerService {
         return modelMapper.map(customerEntity, CustomerResponse.class);
     }
 
-    public CustomPage<CustomerResponse> searchAllCustomers(SearchCustomerRequest req) {
+    public CustomPage<CustomerResponse> searchAllCustomers(GenericSearchRequest req) {
         // Разбор sort-параметра
         String[] parts = req.getSort().split(",");
         String sortField = parts[0];

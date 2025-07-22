@@ -1,4 +1,4 @@
-package rent.vehicle.workerserviceapp.service.specification;
+package rent.vehicle.useerservice.app.service.specification;
 
 import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
@@ -6,20 +6,18 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
+import rent.vehicle.dto.request.GenericSearchRequest;
 import rent.vehicle.dto.request.SearchCriteria;
-import rent.vehicle.dto.request.SearchCustomerRequest;
-
 
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
 public class CustomerSpecificationBuilder<T> {
-    public Specification buildFromRequest(SearchCustomerRequest request) {
+    public Specification buildFromRequest(GenericSearchRequest request) {
         if(request.getSearchCriteriaList()!=null && request.getSearchCriteriaList().isEmpty()){
             return  null;
         }

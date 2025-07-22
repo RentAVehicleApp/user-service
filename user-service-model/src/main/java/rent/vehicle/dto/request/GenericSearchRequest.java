@@ -1,9 +1,10 @@
-package rent.vehicle.workerservicemodel.dto;
+package rent.vehicle.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+
 @Getter
 @Setter
 public class GenericSearchRequest {

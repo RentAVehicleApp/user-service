@@ -52,8 +52,6 @@ public class CustomerEntity {
     @Column(name = "status")
     private CustomerStatus status;
 
-    @Column(name = "roles")
-    private List<CustomerRole> roles;
 
     // геттеры/сеттеры или Lombok @Getter/@Setter
 
@@ -63,9 +61,6 @@ public class CustomerEntity {
         updatedAt = createdAt;
         if (status == null) {
             status = CustomerStatus.ACTIVE; // Устанавливаем статус по умолчанию
-        }
-        if (roles == null) {
-            roles = List.of(CustomerRole.USER); // Роль по умолчанию
         }
     }
 

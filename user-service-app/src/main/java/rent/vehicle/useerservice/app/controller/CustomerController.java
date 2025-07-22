@@ -1,12 +1,11 @@
 package rent.vehicle.useerservice.app.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rent.vehicle.common.CustomPage;
 import rent.vehicle.dto.request.CreateCustomerDto;
-import rent.vehicle.dto.request.SearchCustomerRequest;
+import rent.vehicle.dto.request.GenericSearchRequest;
 import rent.vehicle.dto.request.UpdateCustomerDto;
 import rent.vehicle.dto.response.CustomerResponse;
 import rent.vehicle.useerservice.app.service.CustomerService;
@@ -42,15 +41,15 @@ public class CustomerController {
     public CustomerResponse getCustomerByEmail(@PathVariable String email) {
         return customerService.getCustomerByEmail(email);
     }
-    @PostMapping("/search")
-    public CustomPage<CustomerResponse> searchCustomers (@RequestBody SearchCustomerRequest searchCustomerRequest) {
-        return customerService.searchAllCustomers(searchCustomerRequest);
+    @GetMapping("/search")
+    public CustomPage<CustomerResponse> searchCustomers (@ModelAttribute GenericSearchRequest genericSearchRequest) {
+        return customerService.searchAllCustomers(genericSearchRequest);
     }
     @GetMapping("/all")
     public CustomPage<CustomerResponse> getAllActiveCustomers() {
         return customerService.getAllCustomers();
     }
-    @GetMapping("/email/users_boxes")
+    @PostMapping("/email/users_boxes")
     public CustomPage<CustomerResponse> getUsersByEmailBox(@RequestBody String value){
         return customerService.getCustomersByEmailBox(value);
     }
