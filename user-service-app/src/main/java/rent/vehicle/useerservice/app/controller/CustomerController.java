@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rent.vehicle.common.CustomPage;
+import rent.vehicle.constants.ApiPaths;
 import rent.vehicle.dto.request.CreateCustomerDto;
 import rent.vehicle.dto.request.GenericSearchRequest;
 import rent.vehicle.dto.request.UpdateCustomerDto;
@@ -11,13 +12,13 @@ import rent.vehicle.dto.response.CustomerResponse;
 import rent.vehicle.useerservice.app.service.CustomerService;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping(ApiPaths.PATH_BASE)
 @RequiredArgsConstructor
 @Validated
 public class CustomerController {
     final CustomerService customerService;
 
-    @GetMapping("/health")
+    @GetMapping(ApiPaths.PATH_HEALTH)
     public String health() {
         return "OK";
     }
@@ -25,35 +26,35 @@ public class CustomerController {
     public CustomerResponse createCustomer(@RequestBody CreateCustomerDto createCustomerDto) {
         return customerService.createCustomer(createCustomerDto);
     }
-    @GetMapping("/{userId}")
-    public CustomerResponse getCustomer(@PathVariable long  userId) {
-        return customerService.getCustomer(userId);
+    @GetMapping(ApiPaths.PATH_ID)
+    public CustomerResponse getCustomer(@PathVariable long  customerId) {
+        return customerService.getCustomer(customerId);
     }
-    @PatchMapping("/update/{userId}")
-    public CustomerResponse updateCustomer(@PathVariable long userId, @RequestBody UpdateCustomerDto updateCustomerDto) {
-        return customerService.updateCustomer(userId, updateCustomerDto);
+    @PatchMapping(ApiPaths.PATH_ID)
+    public CustomerResponse updateCustomer(@PathVariable long customerId, @RequestBody UpdateCustomerDto updateCustomerDto) {
+        return customerService.updateCustomer(customerId, updateCustomerDto);
     }
-    @DeleteMapping("/remove/{userId}")
-    public CustomerResponse deleteCustomer(@PathVariable long userId) {
-        return customerService.removeCustomer(userId);
+    @DeleteMapping(ApiPaths.PATH_ID)
+    public CustomerResponse deleteCustomer(@PathVariable long customerId) {
+        return customerService.removeCustomer(customerId);
     }
-    @GetMapping("email/{email}")
+    @GetMapping(ApiPaths.PATH_EMAIL+ApiPaths.PATH_EMAIL_VAR)
     public CustomerResponse getCustomerByEmail(@PathVariable String email) {
         return customerService.getCustomerByEmail(email);
     }
-    @GetMapping("/search")
+    @GetMapping(ApiPaths.PATH_SEARCH)
     public CustomPage<CustomerResponse> searchCustomers (@ModelAttribute GenericSearchRequest genericSearchRequest) {
         return customerService.searchAllCustomers(genericSearchRequest);
     }
-    @GetMapping("/all")
+    @GetMapping(ApiPaths.PATH_ALL)
     public CustomPage<CustomerResponse> getAllActiveCustomers() {
         return customerService.getAllCustomers();
     }
-    @PostMapping("/email/users_boxes")
-    public CustomPage<CustomerResponse> getUsersByEmailBox(@RequestBody String value){
-        return customerService.getCustomersByEmailBox(value);
+    @PostMapping(ApiPaths.PATH_EMAIL+ApiPaths.PATH_USERS_BOXES+ApiPaths.PATH_PATTERN)
+    public CustomPage<CustomerResponse> getCustomersByEmailBox(@PathVariable String pattern){
+        return customerService.getCustomersByEmailBox(pattern);
     }
-    @GetMapping("/user/contain/{pattern}")
+    @GetMapping(ApiPaths.PATH_CUSTOMER+ApiPaths.PATH_CONTAIN+ApiPaths.PATH_PATTERN)
     public CustomPage<CustomerResponse> getCustomersByNameMatching(@PathVariable String pattern) {
         return customerService.getCustomersByNamePattern(pattern);
     }
