@@ -28,5 +28,4 @@ public class CustomerResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private CustomerStatus status; // Добавьте статус
-    private List<CustomerRole> roles; // Добавьте роли
 }
