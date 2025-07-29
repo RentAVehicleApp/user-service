@@ -1,5 +1,6 @@
 package rent.vehicle.useerservice.app.service;
 
+import org.springframework.data.domain.Pageable;
 import rent.vehicle.common.CustomPage;
 import rent.vehicle.dto.request.CreateCustomerDto;
 import rent.vehicle.dto.request.GenericSearchRequest;
@@ -17,7 +18,7 @@ public interface CustomerService {
 
     CustomerResponse getCustomerByEmail(String email);
 
-    CustomPage<CustomerResponse> searchAllCustomers(GenericSearchRequest searchUserRequest);
+    CustomPage<CustomerResponse> searchAllCustomers(String filter, Pageable pageable);
 
     CustomPage<CustomerResponse> getAllCustomers();
 

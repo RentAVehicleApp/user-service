@@ -1,6 +1,7 @@
 package rent.vehicle.useerservice.app.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rent.vehicle.common.CustomPage;
@@ -43,8 +44,8 @@ public class CustomerController {
         return customerService.getCustomerByEmail(email);
     }
     @GetMapping(ApiPaths.PATH_SEARCH)
-    public CustomPage<CustomerResponse> searchCustomers (@ModelAttribute GenericSearchRequest genericSearchRequest) {
-        return customerService.searchAllCustomers(genericSearchRequest);
+    public CustomPage<CustomerResponse> searchCustomers (@RequestParam(required = false) String filter, Pageable pageable) {
+        return customerService.searchAllCustomers(filter,pageable);
     }
     @GetMapping(ApiPaths.PATH_ALL)
     public CustomPage<CustomerResponse> getAllActiveCustomers() {

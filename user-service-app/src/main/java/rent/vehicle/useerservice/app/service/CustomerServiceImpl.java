@@ -19,6 +19,7 @@ import rent.vehicle.enums.CustomerStatus;
 import rent.vehicle.exception.CustomerAlreadyExistsException;
 import rent.vehicle.exception.CustomerNotFoundException;
 import rent.vehicle.exception.CustomerPhoneNumberAlreadyRegistered;
+import rent.vehicle.useerservice.app.common.SearchCriteriaParser;
 import rent.vehicle.useerservice.app.domain.CustomerEntity;
 import rent.vehicle.useerservice.app.repository.CustomerRepository;
 import rent.vehicle.useerservice.app.service.specification.CustomerSpecification;
@@ -38,6 +39,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final ModelMapper modelMapper;
     private final CustomerSpecificationBuilder<CustomerEntity> customerSpecificationBuilder;
+    private final SearchCriteriaParser searchCriteriaParser;
 
     @Transactional
     @Override
@@ -121,7 +123,8 @@ public class CustomerServiceImpl implements CustomerService {
         return modelMapper.map(customerEntity, CustomerResponse.class);
     }
 
-    public CustomPage<CustomerResponse> searchAllCustomers(GenericSearchRequest req) {
+    public CustomPage<CustomerResponse> searchAllCustomers(String filter,Pageable pageable) {
+        GenericSearchRequest req = searchCriteriaParser.buildSearchRequest(filter,pageable);
         // Разбор sort-параметра
         String[] parts = req.getSort().split(",");
         String sortField = parts[0];
@@ -131,7 +134,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         Sort sort = Sort.by(new Sort.Order(direction, sortField));
 
-        Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), sort);
+        pageable = PageRequest.of(req.getPage(), req.getSize(), sort);
 
         Specification<CustomerEntity> spec = customerSpecificationBuilder.buildFromRequest(req);
         Page<CustomerEntity> page = customerRepository.findAll(spec, pageable);
