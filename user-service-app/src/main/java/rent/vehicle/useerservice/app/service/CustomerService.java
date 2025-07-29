@@ -10,13 +10,13 @@ import rent.vehicle.dto.response.CustomerResponse;
 public interface CustomerService {
     CustomerResponse createCustomer(CreateCustomerDto createCustomerDto);
 
-    CustomerResponse getCustomer(long userId);
+    CustomerResponse getCustomer(long customerId);
 
-    CustomerResponse updateCustomer(long userId, UpdateCustomerDto updateCustomerDto);
+    CustomerResponse updateCustomer(long customerId, UpdateCustomerDto updateCustomerDto);
 
-    CustomerResponse deleteCustomer(long userId);
+    CustomerResponse deleteCustomer(long customerId);
 
-    CustomerResponse removeCustomer(long userId);
+    CustomerResponse removeCustomer(long customerId);
 
     CustomerResponse getCustomerByEmail(String email);
 
