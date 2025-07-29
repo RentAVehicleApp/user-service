@@ -91,6 +91,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Transactional
     @Override
+    public CustomerResponse deleteCustomer(long userId) {
+       CustomerEntity customerEntity = findCustomerById(userId);
+       customerRepository.delete(customerEntity);
+       return modelMapper.map(customerEntity, CustomerResponse.class);
+    }
+
+    @Transactional
+    @Override
     public CustomerResponse removeCustomer(long userId) {
         log.info("removeCustomer started");
         CustomerEntity customerEntity = findCustomerById(userId);
@@ -103,15 +111,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Transactional
-    public List<CustomerResponse> purgeCustomers() { //TODO добавить права(роли) на вызов //TODO вынести в другой ScheduledService
+    public void purgeCustomers() { //TODO добавить права(роли) на вызов //TODO вынести в другой ScheduledService
         log.info("purgeCustomers started");
         Instant thirtyDaysAgo = ZonedDateTime.now().minusDays(30).toInstant();
         List<CustomerEntity> customerEntityList = customerRepository.findUserEntitiesByStatusAndUpdatedAtBefore(CustomerStatus.DELETED, thirtyDaysAgo);
         log.debug("Users about to purge: {}", customerEntityList);
         customerRepository.deleteAll(customerEntityList);
         log.info("purgeCustomers finished");
-        return customerEntityList.stream().map(customerEntity ->modelMapper.map(customerEntity, CustomerResponse.class))
-                .collect(Collectors.toList());
+
     }
 
     @Override

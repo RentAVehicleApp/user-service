@@ -37,6 +37,10 @@ public class CustomerController {
     }
     @DeleteMapping(ApiPaths.PATH_ID)
     public CustomerResponse deleteCustomer(@PathVariable long customerId) {
+        return customerService.deleteCustomer(customerId);
+    }
+    @DeleteMapping(ApiPaths.PATH_REMOVE+ApiPaths.PATH_ID)
+    public CustomerResponse removeCustomer(@PathVariable long customerId) {
         return customerService.removeCustomer(customerId);
     }
     @GetMapping(ApiPaths.PATH_EMAIL+ApiPaths.PATH_EMAIL_VAR)

@@ -12,4 +12,5 @@ public class ApiPaths {
     public static final String PATH_PATTERN = "/{pattern}";
     public static final String PATH_CUSTOMER = "/customer";
     public static final String PATH_CONTAIN = "/contain";
+    public static final String PATH_REMOVE = "/remove";
 }
