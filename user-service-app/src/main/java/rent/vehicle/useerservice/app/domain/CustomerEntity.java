@@ -5,12 +5,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import rent.vehicle.enums.CustomerLicenseType;
-import rent.vehicle.enums.CustomerRole;
 import rent.vehicle.enums.CustomerStatus;
-
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
+
 
 @Getter
 @Setter
