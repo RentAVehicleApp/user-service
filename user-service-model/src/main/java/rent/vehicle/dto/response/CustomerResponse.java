@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import rent.vehicle.enums.CustomerLicenseType;
-import rent.vehicle.enums.CustomerRole;
 import rent.vehicle.enums.CustomerStatus;
 
 import java.time.Instant;
