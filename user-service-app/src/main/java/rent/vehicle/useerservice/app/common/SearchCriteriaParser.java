@@ -45,11 +45,12 @@ public class SearchCriteriaParser {
         return searchCriteriaList;
     }
     public GenericSearchRequest buildSearchRequest(String filter, Pageable pageable) {
+        String sortString = buildSortString(pageable.getSort());
         return GenericSearchRequest.builder()
                 .searchCriteriaList(searchCriteriaParse(filter))
                 .page(pageable.getPageNumber())
                 .size(pageable.getPageSize())
-                .sort(pageable.getSort() != null ? pageable.getSort().toString() : "id,desc")
+                .sort(sortString)
                 .build();
     }
 
@@ -58,8 +59,11 @@ public class SearchCriteriaParser {
             return "id,desc"; // Дефолтная сортировка
         }
 
+        // Берем только первый элемент сортировки для простоты
+        // Если нужна множественная сортировка, придется изменить логику в сервисе
         return sort.stream()
+                .findFirst()
                 .map(order -> order.getProperty() + "," + order.getDirection().name().toLowerCase())
-                .collect(Collectors.joining(";"));
+                .orElse("id,desc");
     }
 }

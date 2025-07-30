@@ -133,7 +133,7 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomPage<CustomerResponse> searchAllCustomers(String filter,Pageable pageable) {
         GenericSearchRequest req = searchCriteriaParser.buildSearchRequest(filter,pageable);
         // Разбор sort-параметра
-        String[] parts = req.getSort().split(",");
+        String[] parts = req.getSort().toLowerCase().split(",");
         String sortField = parts[0];
         Sort.Direction direction = parts.length > 1
                 ? Sort.Direction.fromString(parts[1].trim())
