@@ -11,12 +11,16 @@ import rent.vehicle.dto.request.SearchCriteria;
 
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
 public class CustomerSpecificationBuilder<T> {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
+
     public Specification buildFromRequest(GenericSearchRequest request) {
         if(request.getSearchCriteriaList()!=null && request.getSearchCriteriaList().isEmpty()){
             return  null;
@@ -50,13 +54,24 @@ public class CustomerSpecificationBuilder<T> {
 
             Object value = null;
             String stringValue = searchCriteria.getValue();
+
+            // Преобразование типов
             if(javaType.isEnum()){
                 value = convertToEnum(javaType, stringValue);
-            }else if(javaType==Long.class){
+            } else if(javaType == Long.class){
                 value = Long.parseLong(stringValue);
-            }else if(javaType== Instant.class){
+            } else if(javaType == Instant.class){
                 value = Instant.parse(stringValue);
-            }else{
+            } else if(javaType == LocalDate.class){
+                // Добавлено преобразование для LocalDate
+                value = LocalDate.parse(stringValue, DATE_FORMATTER);
+            } else if(javaType == Integer.class){
+                value = Integer.parseInt(stringValue);
+            } else if(javaType == Double.class){
+                value = Double.parseDouble(stringValue);
+            } else if(javaType == Boolean.class){
+                value = Boolean.parseBoolean(stringValue);
+            } else {
                 value = stringValue;
             }
             return switch (searchCriteria.getOperation()) {
