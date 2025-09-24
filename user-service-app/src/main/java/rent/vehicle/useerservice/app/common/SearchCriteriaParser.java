@@ -13,6 +13,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class SearchCriteriaParser {
+    private String unescape(String s) {
+        String r = s.replace("\\\\", "\\"); // 1) двойной слэш -> один
+        r = r.replace("\\,", ",");          // 2) \, -> ,
+        r = r.replace("\\:", ":");          // 3) \: -> :
+        return r;
+    }
 
     private List<SearchCriteria> searchCriteriaParse(String filter) {
         List<SearchCriteria> searchCriteriaList = new ArrayList<>();
@@ -22,22 +28,26 @@ public class SearchCriteriaParser {
         }
 
         // Сначала разделяем по запятым на отдельные критерии
-        String[] criteriaArray = filter.trim().split(",");
+        String[] criteriaArray = filter.trim().split("(?<!\\\\),");
 
         for (String criteria : criteriaArray) {
             // Затем каждый критерий разделяем по двоеточиям
-            String[] parts = criteria.trim().split(":", 3); // 3 - чтобы value могло содержать ":"
-
+            String[] parts = criteria.trim().split("(?<!\\\\):", 3); // 3 - чтобы value могло содержать ":"
             if (parts.length == 3 && !parts[0].isBlank()) {
                 try {
-                    SearchCriteria searchCriteria = new SearchCriteria();
-                    searchCriteria.setFilter(parts[0].trim());
-                    searchCriteria.setOperation(Operations.valueOf(parts[1].trim().toUpperCase()));
-                    searchCriteria.setValue(parts[2].trim());
-                    searchCriteriaList.add(searchCriteria);
+                    String field = unescape(parts[0].trim());
+                    String opRaw = unescape(parts[1].trim());
+                    String value = unescape(parts[2].trim());
+
+                    SearchCriteria sc = new SearchCriteria();
+                    sc.setFilter(field);
+                    sc.setOperation(Operations.valueOf(opRaw));
+                    sc.setValue(value);
+
+                    searchCriteriaList.add(sc);
                 } catch (IllegalArgumentException e) {
-                 e.getMessage();
-                 throw e;
+
+                    throw e;
                 }
             }
         }

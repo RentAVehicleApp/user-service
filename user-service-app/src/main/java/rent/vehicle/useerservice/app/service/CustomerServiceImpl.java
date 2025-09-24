@@ -23,14 +23,13 @@ import rent.vehicle.useerservice.app.common.SearchCriteriaParser;
 import rent.vehicle.useerservice.app.domain.CustomerEntity;
 import rent.vehicle.useerservice.app.repository.CustomerRepository;
 import rent.vehicle.useerservice.app.service.specification.CustomerSpecification;
-import rent.vehicle.useerservice.app.service.specification.CustomerSpecificationBuilder;
+import rent.vehicle.useerservice.app.service.specification.GenericSpecificationBuilder;
 
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final ModelMapper modelMapper;
-    private final CustomerSpecificationBuilder<CustomerEntity> customerSpecificationBuilder;
+    private final GenericSpecificationBuilder<CustomerEntity> customerSpecificationBuilder;
     private final SearchCriteriaParser searchCriteriaParser;
 
     @Transactional
@@ -133,10 +132,10 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomPage<CustomerResponse> searchAllCustomers(String filter,Pageable pageable) {
         GenericSearchRequest req = searchCriteriaParser.buildSearchRequest(filter,pageable);
         // Разбор sort-параметра
-        String[] parts = req.getSort().toLowerCase().split(",");
+        String[] parts = req.getSort().split(",");
         String sortField = parts[0];
         Sort.Direction direction = parts.length > 1
-                ? Sort.Direction.fromString(parts[1].trim())
+                ? Sort.Direction.fromString(parts[1].trim().toLowerCase())
                 : Sort.Direction.ASC; // по умолчанию ASC, если не указано
 
         Sort sort = Sort.by(new Sort.Order(direction, sortField));

@@ -3,7 +3,7 @@ package rent.vehicle.constants;
 public class ApiPaths {
     public static final String PATH_BASE = "api/v1/customer";
     public static final String PATH_HEALTH = "/health";
-    public static final String PATH_ID = "{customerId}";
+    public static final String PATH_ID = "/{customerId}";
     public static final String PATH_EMAIL = "/email";
     public static final String PATH_EMAIL_VAR = "/{email}";
     public static final String PATH_SEARCH = "/search";

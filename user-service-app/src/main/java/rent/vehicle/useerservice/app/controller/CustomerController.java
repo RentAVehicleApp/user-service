@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import rent.vehicle.common.CustomPage;
 import rent.vehicle.constants.ApiPaths;
 import rent.vehicle.dto.request.CreateCustomerDto;
-import rent.vehicle.dto.request.GenericSearchRequest;
 import rent.vehicle.dto.request.UpdateCustomerDto;
 import rent.vehicle.dto.response.CustomerResponse;
 import rent.vehicle.useerservice.app.service.CustomerService;
@@ -55,11 +54,11 @@ public class CustomerController {
     public CustomPage<CustomerResponse> getAllActiveCustomers() {
         return customerService.getAllCustomers();
     }
-    @PostMapping(ApiPaths.PATH_EMAIL+ApiPaths.PATH_USERS_BOXES+ApiPaths.PATH_PATTERN)
+    @GetMapping(ApiPaths.PATH_EMAIL+ApiPaths.PATH_USERS_BOXES+ApiPaths.PATH_PATTERN)
     public CustomPage<CustomerResponse> getCustomersByEmailBox(@PathVariable String pattern){
         return customerService.getCustomersByEmailBox(pattern);
     }
-    @GetMapping(ApiPaths.PATH_CUSTOMER+ApiPaths.PATH_CONTAIN+ApiPaths.PATH_PATTERN)
+    @GetMapping(ApiPaths.PATH_CONTAIN+ApiPaths.PATH_PATTERN)
     public CustomPage<CustomerResponse> getCustomersByNameMatching(@PathVariable String pattern) {
         return customerService.getCustomersByNamePattern(pattern);
     }
